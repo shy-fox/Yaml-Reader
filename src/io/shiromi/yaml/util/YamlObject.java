@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
  * A yaml object containing a list of other {@link Yaml} objects
  *
  * @author Shiromi
- * @version 1.5
+ * @version 1.6-a
  */
 public final class YamlObject extends Yaml {
     /**
@@ -339,7 +339,7 @@ public final class YamlObject extends Yaml {
      *          new YamlString("str"),
      *          new YamlNumber("int", 1));
      *      o.set(a, o1);
-     *      System.out.println(o.absoluteSize()); // prints 6
+     *      System.out.println(o.absoluteSize()); // prints 2
      *     }</pre>
      * </blockquote>
      *
@@ -349,19 +349,18 @@ public final class YamlObject extends Yaml {
      * @see #length()
      */
     public int absoluteSize() {
-        Yaml[] content = new Yaml[0];
-        int j = 0;
+        YamlObject[] content = new YamlObject[0];
         for (Yaml v : this.get()) {
-            if (!v.isPrimitive()) {
-                Yaml[] newContent = new Yaml[content.length + 1];
+            if (v.isObject()) {
+                YamlObject[] newContent = new YamlObject[content.length + 1];
                 System.arraycopy(content, 0, newContent, 0, content.length);
-                newContent[content.length] = v;
+                newContent[content.length] = (YamlObject) v;
                 content = newContent;
             }
         }
         int size = this.length();
-        for (Yaml v : content) size += v.length();
-        return size;
+        for (YamlObject v : content) size += v.absoluteSize();
+        return size + 1;
     }
 
     /**

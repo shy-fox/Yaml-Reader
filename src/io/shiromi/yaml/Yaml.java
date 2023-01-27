@@ -8,10 +8,12 @@ import org.jetbrains.annotations.NotNull;
 import java.lang.reflect.Field;
 import java.util.Arrays;
 import java.util.Objects;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 /**
  * A <em>Yaml</em> object used for reference and inheritance.
- * @version 1.5
+ * @version 1.6-a
  * @author Shiromi
  */
 public abstract class Yaml {
@@ -110,10 +112,19 @@ public abstract class Yaml {
         String[] lines = s.split("\\n");
         Yaml[] items = new Yaml[0];
 
-        String full = String.join("\n", lines);
+        System.out.println(Arrays.toString(lines));
 
         while (lines.length > 0) {
-            Yaml y = YamlObject.parse(full);
+            int j = 0, prevJ;
+            StringBuilder sub = new StringBuilder();
+            for (String line : lines) {
+                Matcher m1 = Pattern.compile("(?<leading>^\\s*)").matcher(line);
+                prevJ = j;
+                if (m1.find()) j = m1.group("leading").length();
+                if (prevJ > j) break;
+                sub.append(line).append('\n');
+            }
+            Yaml y = YamlObject.parse(sub.substring(0, sub.length() - 1));
             if (y != null) {
                 int i = ((YamlObject) y).absoluteSize();
                 items = extend(items, y);
@@ -128,7 +139,6 @@ public abstract class Yaml {
                 items = extend(items, y);
                 lines = shrink(lines, 1);
             }
-            full = String.join("\n", lines);
         }
         return items;
     }

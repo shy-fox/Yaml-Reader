@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object with the value null
- * @version 1.5
+ * @version 1.6-a
  * @author Shiromi
  */
 public final class YamlNull extends Yaml {

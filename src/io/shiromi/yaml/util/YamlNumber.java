@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object which is able to hold a number, can have either an Integer or Float as a value
- * @version 1.5
+ * @version 1.6-a
  * @author Shiromi
  */
 public final class YamlNumber extends Yaml {
