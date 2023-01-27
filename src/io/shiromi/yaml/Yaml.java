@@ -112,8 +112,6 @@ public abstract class Yaml {
         String[] lines = s.split("\\n");
         Yaml[] items = new Yaml[0];
 
-        System.out.println(Arrays.toString(lines));
-
         while (lines.length > 0) {
             int j = 0, prevJ;
             StringBuilder sub = new StringBuilder();
