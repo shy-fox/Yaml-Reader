@@ -11,7 +11,7 @@ import java.nio.file.Paths;
  * A file object containing Yaml objects
  *
  * @author Shiromi
- * @version  1.6-a
+ * @version  1.6-b
  */
 public final class YamlFile {
     private final File file;

@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object with the value null
- * @version 1.6-a
+ * @version 1.6-b
  * @author Shiromi
  */
 public final class YamlNull extends Yaml {
@@ -43,6 +43,26 @@ public final class YamlNull extends Yaml {
         } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
             return null;
         }
+    }
+
+    public YamlString yamlString() {
+        return (YamlString) this.cast(YamlString.class);
+    }
+
+    public YamlBoolean yamlBoolean() {
+        return (YamlBoolean) this.cast(YamlBoolean.class);
+    }
+
+    public YamlNumber yamlNumber() {
+        return (YamlNumber) this.cast(YamlNumber.class);
+    }
+
+    public YamlArray yamlArray() {
+        return (YamlArray) this.cast(YamlArray.class);
+    }
+
+    public YamlObject yamlObject() {
+        return (YamlObject) this.cast(YamlObject.class);
     }
 
     /**

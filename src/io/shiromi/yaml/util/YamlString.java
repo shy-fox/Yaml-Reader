@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * A yaml object containing a <code>String</code> as value
  *
  * @author Shiromi
- * @version 1.6-a
+ * @version 1.6-b
  */
 public final class YamlString extends Yaml {
 

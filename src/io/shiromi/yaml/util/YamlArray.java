@@ -5,13 +5,15 @@ import io.shiromi.yaml.Yaml;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
+import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 /**
  * A yaml object in form of an array, takes <code>Objects</code> as values
- * @version 1.5
+ *
  * @author Shiromi
+ * @version 1.6-b
  */
 public class YamlArray extends Yaml {
     /**
@@ -192,6 +194,147 @@ public class YamlArray extends Yaml {
     public @Nullable Object get(int index) {
         if (0 > index || index >= this.length()) return null;
         return this.values[index];
+    }
+
+    /**
+     * Gets the type of the array
+     *
+     * @since 1.6-b
+     */
+    public String getType() {
+        String r = "";
+        if (this.isStringArray()) r = "String[]";
+        else if (this.isNumArray()) r = "Number[]";
+        else if (this.isNullArray()) r = "null[]";
+        else if (this.isBoolArray()) r = "Boolean[]";
+        else if (this.isAnyArray()) r = "Any[]";
+
+        return r;
+    }
+
+    /**
+     * Checks whether all element in this array are a <code>String</code> or not
+     *
+     * @see #getType()
+     * @since 1.6-b
+     */
+    public boolean isStringArray() {
+        for (Class<?> cls : this.getFieldTypes()) if (cls != String.class) return false;
+        return true;
+    }
+
+    /**
+     * Checks whether all elements in this array are <code>Numbers</code> or not
+     *
+     * @see #getType()
+     * @since 1.6-b
+     */
+    public boolean isNumArray() {
+        for (Class<?> cls : this.getFieldTypes()) if (cls.getSuperclass() != Number.class) return false;
+        return true;
+    }
+
+    /**
+     * Checks whether all elements in this array are <code>null</code> or not
+     *
+     * @see #getType()
+     * @since 1.6-b
+     */
+    public boolean isNullArray() {
+        for (Class<?> cls : this.getFieldTypes()) if (cls != Object.class) return false;
+        return true;
+    }
+
+    /**
+     * Checks whether all elements in this array are a <code>Boolean</code> or not
+     *
+     * @see #getType()
+     * @since 1.6-b
+     */
+    public boolean isBoolArray() {
+        for (Class<?> cls : this.getFieldTypes()) if (cls != Boolean.class) return false;
+        return true;
+    }
+
+    /**
+     * Checks if this array has mixed types as content
+     *
+     * @return whether this array contains only mixed types and not a single one
+     * @see #getType()
+     * @since 1.6-b
+     */
+    public boolean isAnyArray() {
+        return !this.isStringArray() && !this.isNumArray() && !this.isNullArray() && !this.isBoolArray();
+    }
+
+    private Class<?> @NotNull [] getFieldTypes() {
+        Class<?>[] types = new Class[this.length()];
+        for (int i = 0; i < this.length(); i++)
+            types[i] = this.get(i) == null ? Object.class : this.values[i].getClass();
+        return types;
+    }
+
+    /**
+     * Checks whether this array has no elements or not
+     *
+     * @since 1.6-b
+     */
+    public boolean isEmpty() {
+        return this.length() == 0;
+    }
+
+    /**
+     * Counts the occurrences of the given object in this array
+     *
+     * @param o the object to look for
+     * @return the amount of times the item is in the array
+     * @since 1.6-b
+     */
+    public int getCountOf(@Nullable Object o) {
+        int count = 0;
+        for (Object o1 : this.get()) {
+            if (o == null && o1 == null) count++;
+            else if (o1 != null && o1.equals(o)) count++;
+        }
+        return count;
+    }
+
+    /**
+     * Checks whether the given item occurs only once
+     *
+     * @param o the object to check
+     * @return whether the item occurs once or not
+     * @see #getCountOf(Object)
+     * @see #has(Object)
+     * @see #contains(Object)
+     * @since 1.6-b
+     */
+    public boolean occursOnce(@Nullable Object o) {
+        return this.getCountOf(o) == 1;
+    }
+
+    /**
+     * Checks whether this array contains the element or not
+     *
+     * @param o the element to look for
+     * @return whether the item occurs or not
+     * @see #contains(Object)
+     * @since 1.6-b
+     */
+    public boolean has(@Nullable Object o) {
+        return this.getCountOf(o) > 0;
+    }
+
+    /**
+     * Checks whether this array contains the element or not
+     *
+     * @param o the element to look for
+     * @return whether the item occurs or not
+     * @see #has(Object)
+     * @since 1.6-b
+     */
+    public boolean contains(@Nullable Object o) {
+        return this.getCountOf(o) > 0;
     }
 
     /**

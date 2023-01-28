@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object which can take a <code>boolean</code> value
- * @version 1.6-a
+ * @version 1.6-b
  * @author Shiromi
  */
 public final class YamlBoolean extends Yaml {

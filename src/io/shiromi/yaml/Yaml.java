@@ -1,5 +1,6 @@
 package io.shiromi.yaml;
 
+import io.shiromi.yaml.exception.CannotCastToYamlArrayException;
 import io.shiromi.yaml.util.*;
 
 import org.jetbrains.annotations.Contract;
@@ -13,8 +14,9 @@ import java.util.regex.Pattern;
 
 /**
  * A <em>Yaml</em> object used for reference and inheritance.
- * @version 1.6-a
+ *
  * @author Shiromi
+ * @version 1.6-b
  */
 public abstract class Yaml {
     /**
@@ -141,6 +143,61 @@ public abstract class Yaml {
         return items;
     }
 
+    /**
+     * Cast this object to a {@link YamlNull} type, effectively setting the value to <code>null</code>
+     *
+     * @param y the Yaml object to <em>nullify</em>
+     * @return the <em>nullified</em> <code>Yaml</code> object, if it is a <code>YamlNull</code> object, returns the object, otherwise returns
+     * a new <code>YamlNull</code> with the same name
+     * @see YamlNull#YamlNull(String)
+     * @see #toNull()
+     * @since 1.6-b
+     */
+    public static @NotNull YamlNull toNull(@NotNull Yaml y) {
+        if (!y.isNullType()) return new YamlNull(y.name);
+        return (YamlNull) y;
+    }
+
+    /**
+     * Cast this object to a {@link YamlNull} type, effectively setting the value to <code>null</code>
+     *
+     * @return the <em>nullified</em> object
+     * @see #toNull(Yaml)
+     * @see YamlNull#YamlNull(String)
+     * @since 1.6-b
+     */
+    public YamlNull toNull() {
+        return toNull(this);
+    }
+
+    /**
+     * Casts the given object to a new {@link YamlArray} with the first element being the value of the passed in object
+     *
+     * @param y the object to cast to a <code>YamlArray</code>
+     * @return a new <code>YamlArray</code> with the first element being the value of the given object
+     * @throws CannotCastToYamlArrayException if the object given is already a <code>YamlArray</code> or if it is
+     *                                        of type <code>YamlObject</code>
+     * @since 1.6-b
+     */
+    @Contract("_ -> new")
+    public static @NotNull YamlArray toArray(@NotNull Yaml y) throws CannotCastToYamlArrayException {
+        if (!y.isPrimitive())
+            throw new CannotCastToYamlArrayException("Cannot cast y to YamlObject because it is of type: " + y.getTypeName());
+        return new YamlArray(y.name, y.get());
+    }
+
+    /**
+     * Cast this object to a new {@link YamlArray} with the first element being the value of this object
+     *
+     * @return a new <code>YamlArray</code> with the name of this object and the first element being the value of
+     * this object
+     * @throws CannotCastToYamlArrayException if this object is a <code>YamlArray</code> or a <code>YamlObject</code>
+     * @since 1.6-b
+     */
+    public YamlArray toArray() throws CannotCastToYamlArrayException {
+        return toArray(this);
+    }
+
     private static Yaml @NotNull [] extend(Yaml @NotNull [] array, Yaml y) {
         Yaml[] newArray = new Yaml[array.length + 1];
         System.arraycopy(array, 0, newArray, 0, array.length);
@@ -250,6 +307,27 @@ public abstract class Yaml {
     }
 
     /**
+     * Gets the name of this class
+     *
+     * @param y the object
+     * @see #getTypeName()
+     * @since 1.6-b
+     */
+    public static @NotNull String getTypeName(Yaml y) {
+        return getType(y).getSimpleName();
+    }
+
+    /**
+     * Gets the name of this object's class
+     *
+     * @see #getTypeName(Yaml)
+     * @since 1.6-b
+     */
+    public String getTypeName() {
+        return getTypeName(this);
+    }
+
+    /**
      * Checks if this object is a {@link YamlString} or not
      *
      * @return whether this type is a <code>YamlString</code> or not
@@ -353,10 +431,13 @@ public abstract class Yaml {
 
     private static @NotNull String toString(@NotNull Class<? extends Yaml> cls, @NotNull Yaml y) {
         StringBuilder s = new StringBuilder(cls.getSimpleName() + '[');
-        s.append("name: \"").append(y.name).append("\", ");
+        s.append("name: \"").append(y.name).append("\"");
         Field[] fields = cls.getFields();
 
         int iMax = fields.length - 1;
+        if (iMax == 0) return s.append(']').toString();
+
+        s.append(", ");
         for (int i = 0; ; i++) {
             try {
                 Field f = fields[i];

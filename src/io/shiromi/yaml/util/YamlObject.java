@@ -2,6 +2,7 @@ package io.shiromi.yaml.util;
 
 import io.shiromi.yaml.Yaml;
 
+import io.shiromi.yaml.exception.YamlElementAlreadyPresentException;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -13,7 +14,7 @@ import java.util.regex.Pattern;
  * A yaml object containing a list of other {@link Yaml} objects
  *
  * @author Shiromi
- * @version 1.6-a
+ * @version 1.6-b
  */
 public final class YamlObject extends Yaml {
     /**
@@ -77,9 +78,12 @@ public final class YamlObject extends Yaml {
      * @param after the item to find and to insert/add this item after
      * @param y     the item to add/insert
      * @return the new length of the array
+     * @throws YamlElementAlreadyPresentException if the item is already present in the object
      * @see #add(Yaml, Yaml...)
      */
-    public int add(Yaml after, Yaml y) {
+    public int add(Yaml after, Yaml y) throws YamlElementAlreadyPresentException {
+        if (this.contains(y))
+            throw new YamlElementAlreadyPresentException("Element " + y + " already exists in this object");
         int index = this.length();
         if (this.contains(after)) index = this.find(after);
         int j = 0;
@@ -101,10 +105,11 @@ public final class YamlObject extends Yaml {
      * @param after the item to find and to insert/add after
      * @param y     the items to add/insert
      * @return the new length of this array
+     * @throws YamlElementAlreadyPresentException if the item is already present in the object
      * @see #add(Yaml, Yaml)
      * @since 1.2
      */
-    public int add(Yaml after, Yaml @NotNull ... y) {
+    public int add(Yaml after, Yaml @NotNull ... y) throws YamlElementAlreadyPresentException {
         int length = this.add(after, y[0]);
         for (int i = 1; i < y.length; i++) length = this.add(y[i - 1], y[i]);
         return length;
@@ -115,11 +120,12 @@ public final class YamlObject extends Yaml {
      *
      * @param y the item to add to the end
      * @return the new length
+     * @throws YamlElementAlreadyPresentException if the item is already present in the object
      * @see #add(Yaml, Yaml)
      * @see #add(Yaml, Yaml...)
      * @see #append(Yaml...)
      */
-    public int append(Yaml y) {
+    public int append(Yaml y) throws YamlElementAlreadyPresentException {
         return this.add(this.getLast(), y);
     }
 
@@ -128,12 +134,13 @@ public final class YamlObject extends Yaml {
      *
      * @param y the items to add to the end
      * @return the new length
+     * @throws YamlElementAlreadyPresentException if the item is already present in the object
      * @see #add(Yaml, Yaml)
      * @see #add(Yaml, Yaml...)
      * @see #append(Yaml)
      * @since 1.2
      */
-    public int append(Yaml @NotNull ... y) {
+    public int append(Yaml @NotNull ... y) throws YamlElementAlreadyPresentException {
         int length = 0;
         for (Yaml y1 : y) length = this.append(y1);
         return length;
@@ -145,10 +152,11 @@ public final class YamlObject extends Yaml {
      * @param y    the item to find and replace
      * @param newY the new item to replace with
      * @return the old item
+     * @throws YamlElementAlreadyPresentException if the item is already present in the object
      * @see #replace(int, Yaml)
      * @since 1.5
      */
-    public @Nullable Yaml replace(Yaml y, Yaml newY) {
+    public @Nullable Yaml replace(Yaml y, Yaml newY) throws YamlElementAlreadyPresentException {
         return this.replace(this.find(y), newY);
     }
 
@@ -158,10 +166,13 @@ public final class YamlObject extends Yaml {
      * @param index the index of the item to replace
      * @param y     the new item to replace with
      * @return the old item
+     * @throws YamlElementAlreadyPresentException if the item is already present in the object
      * @see #replace(Yaml, Yaml)
      * @since 1.5
      */
-    public @Nullable Yaml replace(int index, Yaml y) {
+    public @Nullable Yaml replace(int index, Yaml y) throws YamlElementAlreadyPresentException {
+        if (this.contains(y))
+            throw new YamlElementAlreadyPresentException("Element " + y + " already exists in this object");
         if (0 > index || index >= this.length()) return null;
         Yaml y1 = this.getAt(index);
         this.values[index] = y;
@@ -289,6 +300,100 @@ public final class YamlObject extends Yaml {
     }
 
     /**
+     * Checks whether this object has no elements or not
+     *
+     * @since 1.6-b
+     */
+    public boolean isEmpty() {
+        return this.length() == 0;
+    }
+
+    /**
+     * Counts the amount of items of the given class in this object
+     *
+     * @param item the type of object to look for
+     * @return the amount of items of the given class
+     * @since 1.6-b
+     * @see #getCountOfStrings()
+     * @see #getCountOfNumbers()
+     * @see #getCountOfNullTypes()
+     * @see #getCountOfBooleans()
+     * @see #getCountOfArrays()
+     * @see #getCountOfObjects()
+     */
+    public int getCountOf(Class<? extends Yaml> item) {
+        int count = 0;
+        for (Yaml y : this.get()) if (item == y.getClass()) count++;
+        return count;
+    }
+
+    /**
+     * Counts the amount of {@link YamlString Strings} inside this object
+     *
+     * @return the amount of <code>Strings</code>
+     * @see #getCountOf(Class)
+     * @since 1.6-b
+     */
+    public int getCountOfStrings() {
+        return this.getCountOf(YamlString.class);
+    }
+
+    /**
+     * Counts the amount of {@link YamlNumber Numbers} inside this object
+     *
+     * @return the amount of <code>Numbers</code>
+     * @see #getCountOf(Class)
+     * @since 1.6-b
+     */
+    public int getCountOfNumbers() {
+        return this.getCountOf(YamlNumber.class);
+    }
+
+    /**
+     * Counts the amount of {@link YamlNull Null Types} inside this object
+     *
+     * @return the amount of <code>Null Types</code>
+     * @see #getCountOf(Class)
+     * @since 1.6-b
+     */
+    public int getCountOfNullTypes() {
+        return this.getCountOf(YamlNull.class);
+    }
+
+    /**
+     * Counts the amount of {@link YamlBoolean Booleans} inside this object
+     *
+     * @return the amount of <code>Booleans</code>
+     * @see #getCountOf(Class)
+     * @since 1.6-b
+     */
+    public int getCountOfBooleans() {
+        return this.getCountOf(YamlBoolean.class);
+    }
+
+    /**
+     * Counts the amount of {@link YamlArray Arrays} inside this object
+     *
+     * @return the amount of <code>Arrays</code>
+     * @see #getCountOf(Class)
+     * @since 1.6-b
+     */
+    public int getCountOfArrays() {
+        return this.getCountOf(YamlArray.class);
+    }
+
+    /**
+     * Counts the amount of {@link YamlObject Objects} inside this object
+     *
+     * @return the amount of <code>Objects</code>
+     * @see #getCountOf(Class)
+     * @since 1.6-b
+     */
+    public int getCountOfObjects() {
+        return this.getCountOf(YamlObject.class);
+    }
+
+    /**
      * Gets the items of this object
      *
      * @return {@link #values}
@@ -405,7 +510,11 @@ public final class YamlObject extends Yaml {
                         sb.append(items[k]).append('\n');
                     }
                     YamlObject o1 = YamlObject.parse(sb.substring(0, sb.length() - 1));
-                    o.append(o1);
+                    try {
+                        o.append(o1);
+                    } catch (YamlElementAlreadyPresentException e) {
+                        throw new RuntimeException(e);
+                    }
                     assert o1 != null;
                     i += o1.absoluteSize();
                 } else {
@@ -415,7 +524,11 @@ public final class YamlObject extends Yaml {
                     if (y == null) y = YamlBoolean.parse(s1);
                     if (y == null) y = YamlNull.parse(s1);
                     if (y == null) y = YamlArray.parse(s1);
-                    o.append(y);
+                    try {
+                        o.append(y);
+                    } catch (YamlElementAlreadyPresentException e) {
+                        throw new RuntimeException(e);
+                    }
                 }
             }
             return o;
