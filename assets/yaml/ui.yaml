@@ -1,0 +1,24 @@
+# Creating a UI from a YAML File
+Title: "UI using a YAML file"
+size:
+  w: 500
+  h: 300
+location: null
+layout: null
+Label:
+  text: "This will be on the label"
+  position:
+    x: 10
+    y: 0
+  size:
+    w: 200
+    h: 20
+Button:
+  text: "This text will be on the button"
+  position:
+    x: 10
+    y: 30
+  size:
+    w: 200
+    h: 20
+Default op: "EXIT_ON_CLOSE"
