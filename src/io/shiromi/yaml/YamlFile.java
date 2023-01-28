@@ -143,7 +143,7 @@ public final class YamlFile {
      * @return a new YamlFile with the contents parsed to a Yaml[]
      */
     public static @Nullable YamlFile read(@NotNull File f) {
-        if (f.getName().endsWith(".yaml")) return null;
+        if (!f.getName().endsWith(".yaml")) return null;
         StringBuilder s = new StringBuilder();
         try {
             BufferedReader r = new BufferedReader(new FileReader(f));
