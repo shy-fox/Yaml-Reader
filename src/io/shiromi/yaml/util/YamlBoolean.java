@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object which can take a <code>boolean</code> value
- * @version 1.6-b
+ * @version 1.7
  * @author Shiromi
  */
 public final class YamlBoolean extends Yaml {
@@ -141,7 +141,7 @@ public final class YamlBoolean extends Yaml {
      * @return a new YamlBoolean if it could be parsed, otherwise returns <code>null</code>
      */
     public static @Nullable YamlBoolean parse(String s) {
-        Matcher m = Pattern.compile("^\\s*(?<name>[a-z]\\w*):\\s?(?<value>true|false)").matcher(s);
+        Matcher m = Pattern.compile("^\\s*(?<name>[a-z][\\w ]*):\\s?(?<value>true|false)").matcher(s);
         if (m.matches()) return new YamlBoolean(m.group("name"), m.group("value"));
         return null;
     }

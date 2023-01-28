@@ -13,7 +13,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object with the value null
- * @version 1.6-b
+ * @version 1.7
  * @author Shiromi
  */
 public final class YamlNull extends Yaml {
@@ -119,7 +119,7 @@ public final class YamlNull extends Yaml {
      * @return a new YamlNull object if it could be parsed, otherwise returns <code>null</code>
      */
     public static @Nullable YamlNull parse(String s) {
-        Matcher m = Pattern.compile("^\\s*(?<name>[a-z]\\w*): null").matcher(s);
+        Matcher m = Pattern.compile("^\\s*(?<name>[a-z][\\w ]*): null").matcher(s);
         if (m.matches()) return new YamlNull(m.group("name"));
         return null;
     }

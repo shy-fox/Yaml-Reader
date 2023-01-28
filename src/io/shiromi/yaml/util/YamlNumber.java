@@ -10,7 +10,7 @@ import java.util.regex.Pattern;
 
 /**
  * A yaml object which is able to hold a number, can have either an Integer or Float as a value
- * @version 1.6-b
+ * @version 1.7
  * @author Shiromi
  */
 public final class YamlNumber extends Yaml {
@@ -342,7 +342,7 @@ public final class YamlNumber extends Yaml {
      * @return a new YamlNumber object if it could be parsed, otherwise returns <code>null</code>
      */
     public static @Nullable YamlNumber parse(String s) {
-        Matcher m = Pattern.compile("^\\s*(?<name>[a-z]\\w*):\\s?(?<value>[+-]?\\d+(?>\\.[0-9]+)?(?>[eE][+-]\\d+)?)")
+        Matcher m = Pattern.compile("^\\s*(?<name>[A-Za-z][\\w ]*):\\s?(?<value>[+-]?\\d+(?>\\.[0-9]+)?(?>[eE][+-]\\d+)?)")
                 .matcher(s);
         if (m.matches()) {
             String name = m.group("name");

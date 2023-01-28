@@ -16,7 +16,7 @@ import java.util.regex.Pattern;
  * A <em>Yaml</em> object used for reference and inheritance.
  *
  * @author Shiromi
- * @version 1.6-b
+ * @version 1.7
  */
 public abstract class Yaml {
     /**
@@ -69,7 +69,7 @@ public abstract class Yaml {
      * @see #stringify(int)
      */
     public final @NotNull String stringify() {
-        return this.stringify(0);
+        return this.stringify(0) + '\n';
     }
 
     /**
@@ -114,24 +114,38 @@ public abstract class Yaml {
         String[] lines = s.split("\\n");
         Yaml[] items = new Yaml[0];
 
+        Pattern leading = Pattern.compile("^(?<leading>\\s*)");
+        Pattern group = Pattern.compile("^\\s*(?<name>[A-Za-z][\\w ]*):$");
+
         while (lines.length > 0) {
-            int j = 0, prevJ;
-            StringBuilder sub = new StringBuilder();
-            for (String line : lines) {
-                Matcher m1 = Pattern.compile("(?<leading>^\\s*)").matcher(line);
-                prevJ = j;
-                if (m1.find()) j = m1.group("leading").length();
-                if (prevJ > j) break;
-                sub.append(line).append('\n');
+            if (Pattern.matches("^\\s*#.+$", lines[0])) {
+                lines = shrink(lines, 1);
+                continue;
             }
-            Yaml y = YamlObject.parse(sub.substring(0, sub.length() - 1));
-            if (y != null) {
-                int i = ((YamlObject) y).absoluteSize();
-                items = extend(items, y);
-                lines = shrink(lines, i);
+            Matcher m1 = group.matcher(lines[0]);
+            if (m1.find()) {
+                Matcher m2 = leading.matcher(lines[0]);
+                int whitespaces = 0;
+                if (m2.find()) whitespaces = m2.group("leading").length();
+
+
+                StringBuilder s1 = new StringBuilder(lines[0] + '\n');
+
+                int currentLevel = whitespaces;
+                for (int i = 1; i < lines.length; i++) {
+                    Matcher m3 = leading.matcher(lines[i]);
+                    if (m3.find()) currentLevel = m3.group("leading").length();
+                    if (currentLevel == whitespaces) break;
+                    s1.append(lines[i]).append('\n');
+                }
+                YamlObject o = YamlObject.parse(s1.substring(0, s1.length() - 1));
+                assert o != null;
+                items = extend(items, o);
+                lines = shrink(lines, o.absoluteSize() + 1);
+
             } else {
                 String s1 = lines[0].trim();
-                y = YamlString.parse(s1);
+                Yaml y = YamlString.parse(s1);
                 if (y == null) y = YamlNumber.parse(s1);
                 if (y == null) y = YamlBoolean.parse(s1);
                 if (y == null) y = YamlNull.parse(s1);
@@ -413,6 +427,7 @@ public abstract class Yaml {
      */
     public final boolean equals(Yaml other) {
         if (other == null) return false;
+        if (this.getClass() != other.getClass()) return false;
         return this.name.equals(other.name) && Objects.equals(this.get(), other.get());
     }
 

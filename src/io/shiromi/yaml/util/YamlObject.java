@@ -14,7 +14,7 @@ import java.util.regex.Pattern;
  * A yaml object containing a list of other {@link Yaml} objects
  *
  * @author Shiromi
- * @version 1.6-b
+ * @version 1.7
  */
 public final class YamlObject extends Yaml {
     /**
@@ -268,6 +268,113 @@ public final class YamlObject extends Yaml {
     }
 
     /**
+     * Gets an item in the object by its name
+     *
+     * @param name the name of the object
+     * @return the object, if not found, returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public @Nullable Yaml getByName(String name) {
+        for (Yaml y : this.get()) if (y.name.equals(name)) return y;
+        return null;
+    }
+
+    /**
+     * Gets an item in the object by its name and makes sure it's the class passed in
+     *
+     * @param name the name of the object
+     * @param type the type of the object
+     * @return the object if both parameters apply to it, otherwise returns <code>null</code>
+     * @see #getByName(String)
+     * @see #getString(String)
+     * @see #getNumber(String)
+     * @see #getBoolean(String)
+     * @see #getNull(String)
+     * @see #getArray(String)
+     * @see #getObject(String)
+     */
+    public @Nullable Yaml getByName(String name, Class<? extends Yaml> type) {
+        Yaml y = this.getByName(name);
+        if (y == null) return null;
+        Class<? extends Yaml> cls = y.getClass();
+        if (cls == type) return y;
+        return null;
+    }
+
+    /**
+     * Gets a <code>YamlString</code> inside this object by its name
+     *
+     * @param name the name of the object
+     * @return the string if found, otherwise returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public YamlString getString(String name) {
+        return (YamlString) this.getByName(name, YamlString.class);
+    }
+
+    /**
+     * Gets a <code>YamlNumber</code> inside this object by its name
+     *
+     * @param name the name of the object
+     * @return the number if found, otherwise returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public YamlNumber getNumber(String name) {
+        return (YamlNumber) this.getByName(name, YamlNumber.class);
+    }
+
+    /**
+     * Gets a <code>YamlBoolean</code> inside this object by its name
+     *
+     * @param name the name of the object
+     * @return the boolean if found, otherwise returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public YamlBoolean getBoolean(String name) {
+        return (YamlBoolean) this.getByName(name, YamlBoolean.class);
+    }
+
+    /**
+     * Gets a <code>YamlNull</code> inside this object by its name
+     *
+     * @param name the name of the object
+     * @return the null type if found, otherwise returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public YamlNull getNull(String name) {
+        return (YamlNull) this.getByName(name, YamlNull.class);
+    }
+
+    /**
+     * Gets a <code>YamlArray</code> inside this object by its name
+     *
+     * @param name the name of the object
+     * @return the array if found, otherwise returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public YamlArray getArray(String name) {
+        return (YamlArray) this.getByName(name, YamlArray.class);
+    }
+
+    /**
+     * Gets a <code>YamlObject</code> inside this object by its name
+     *
+     * @param name the name of the object
+     * @return the object if found, otherwise returns <code>null</code>
+     * @see #getByName(String, Class)
+     * @since 1.7
+     */
+    public YamlObject getObject(String name) {
+        return (YamlObject) this.getByName(name, YamlObject.class);
+    }
+
+    /**
      * Checks whether this object contains the given item or not
      *
      * @param y the item to search for
@@ -275,8 +382,9 @@ public final class YamlObject extends Yaml {
      */
     public boolean contains(Yaml y) {
         if (y == null) return false;
-        for (Yaml y1 : this.get()) if (!y1.equals(y)) return false;
-        return true;
+        if (this.length() == 0) return false;
+        for (Yaml y1 : this.values) if (y1.equals(y)) return true;
+        return false;
     }
 
     /**
@@ -313,13 +421,13 @@ public final class YamlObject extends Yaml {
      *
      * @param item the type of object to look for
      * @return the amount of items of the given class
-     * @since 1.6-b
      * @see #getCountOfStrings()
      * @see #getCountOfNumbers()
      * @see #getCountOfNullTypes()
      * @see #getCountOfBooleans()
      * @see #getCountOfArrays()
      * @see #getCountOfObjects()
+     * @since 1.6-b
      */
     public int getCountOf(Class<? extends Yaml> item) {
         int count = 0;
@@ -465,7 +573,7 @@ public final class YamlObject extends Yaml {
         }
         int size = this.length();
         for (YamlObject v : content) size += v.absoluteSize();
-        return size + 1;
+        return size;
     }
 
     /**
@@ -492,38 +600,47 @@ public final class YamlObject extends Yaml {
      */
     public static @Nullable YamlObject parse(@NotNull String s) {
         String[] _items = s.split("\\n");
+        String begin = _items[0];
         String[] items = new String[_items.length - 1];
         System.arraycopy(_items, 1, items, 0, _items.length - 1);
 
-        Matcher m = Pattern.compile("^\\s*(?<name>[a-z]\\w*):$").matcher(_items[0]);
-        if (m.matches()) {
+        Pattern leading = Pattern.compile("^(?<leading>\\s*)");
+        Pattern group = Pattern.compile("^\\s*(?<name>[A-Za-z][\\w ]*):$");
+
+        Matcher m = group.matcher(begin);
+        if (m.find()) {
             YamlObject o = new YamlObject(m.group("name"));
+            Matcher m1 = leading.matcher(items[0]);
+            int whitespaces = 0;
+            if (m1.find()) whitespaces = m1.group("leading").length();
+            if (whitespaces == 0) return null;
+
             for (int i = 0; i < items.length; i++) {
-                if (Pattern.matches("^\\s*(?<name>[a-z]\\w*):$", items[i])) {
-                    int j = 0, prevJ;
-                    StringBuilder sb = new StringBuilder();
-                    for (int k = i; k < items.length; k++) {
-                        Matcher m1 = Pattern.compile("(?<leading>^\\s*)").matcher(items[k]);
-                        prevJ = j;
-                        if (m1.find()) j = m1.group("leading").length();
-                        if (prevJ > j) break;
-                        sb.append(items[k]).append('\n');
+                Matcher m2 = group.matcher(items[i]);
+                if (m2.find()) {
+                    StringBuilder s1 = new StringBuilder(items[i].substring(whitespaces) + '\n');
+                    int currentLevel = whitespaces;
+                    for (int j = i + 1; j < items.length; j++) {
+                        Matcher m3 = leading.matcher(items[j]);
+                        if (m3.find()) currentLevel = m3.group("leading").length();
+                        if (currentLevel == whitespaces) break;
+                        s1.append(items[j].substring(whitespaces)).append('\n');
                     }
-                    YamlObject o1 = YamlObject.parse(sb.substring(0, sb.length() - 1));
+                    YamlObject o1 = parse(s1.substring(0, s1.length() - 1));
+                    assert o1 != null;
+                    i += o1.absoluteSize();
                     try {
                         o.append(o1);
                     } catch (YamlElementAlreadyPresentException e) {
                         throw new RuntimeException(e);
                     }
-                    assert o1 != null;
-                    i += o1.absoluteSize();
                 } else {
-                    String s1 = items[i].trim();
-                    Yaml y = YamlString.parse(s1);
-                    if (y == null) y = YamlNumber.parse(s1);
-                    if (y == null) y = YamlBoolean.parse(s1);
-                    if (y == null) y = YamlNull.parse(s1);
-                    if (y == null) y = YamlArray.parse(s1);
+                    String s2 = items[i].trim();
+                    Yaml y = YamlString.parse(s2);
+                    if (y == null) y = YamlNumber.parse(s2);
+                    if (y == null) y = YamlBoolean.parse(s2);
+                    if (y == null) y = YamlNull.parse(s2);
+                    if (y == null) y = YamlArray.parse(s2);
                     try {
                         o.append(y);
                     } catch (YamlElementAlreadyPresentException e) {

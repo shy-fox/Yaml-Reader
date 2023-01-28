@@ -5,7 +5,6 @@ import io.shiromi.yaml.Yaml;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +12,7 @@ import java.util.regex.Pattern;
  * A yaml object in form of an array, takes <code>Objects</code> as values
  *
  * @author Shiromi
- * @version 1.6-b
+ * @version 1.7
  */
 public class YamlArray extends Yaml {
     /**
@@ -392,7 +391,7 @@ public class YamlArray extends Yaml {
      * @return a new YamlArray if the string could be parsed, otherwise returns <code>null</code>
      */
     public static @Nullable YamlArray parse(String s) {
-        Matcher m = Pattern.compile("(?<name>[a-z]\\w*):\\s?\\[(?<value>[^]]+)\\s?]").matcher(s);
+        Matcher m = Pattern.compile("^\\s*(?<name>[A-Za-z][\\w ]*):\\s?\\[(?<value>[^]]+)\\s?]").matcher(s);
         if (m.matches()) {
             String[] sValues = m.group("value").split(",");
             Object[] values = new Object[sValues.length];

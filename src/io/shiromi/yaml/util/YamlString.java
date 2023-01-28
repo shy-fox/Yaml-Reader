@@ -144,6 +144,49 @@ public final class YamlString extends Yaml {
     }
 
     /**
+     * Checks whether this string's content is the same as the passed argument
+     * @param s the string to compare
+     * @return whether the value of this object is the same as the given string or not
+     * @since 1.7
+     * @see #equals(YamlString, String)
+     */
+    public boolean equals(String s) {
+        return this.get().equals(s);
+    }
+
+    /**
+     * Checks whether the value of the passed in <code>YamlString</code> is the passed in string or not
+     * @param y the <code>YamlString</code> to check the value of
+     * @param s the string to compare
+     * @return whether the value of the object is the same as the given string or not
+     * @since 1.7
+     * @see #equals(String)
+     */
+    @Contract("_, null -> false")
+    public static boolean equals(@NotNull YamlString y, String s) {
+        return y.equals(s);
+    }
+
+    /**
+     * Checks whether this string is empty or not
+     * @since 1.7
+     * @see #isEmpty(YamlString)
+     */
+    public boolean isEmpty() {
+        return this.equals("");
+    }
+
+    /**
+     * Checks whether the given <code>YamlString</code> is empty or not
+     * @param y the <code>YamlString</code> to check the value of
+     * @since 1.7
+     * @see #isEmpty()
+     */
+    public static boolean isEmpty(@NotNull YamlString y) {
+        return y.isEmpty();
+    }
+
+    /**
      * Gets this object's value
      *
      * @return {@link #value}
@@ -188,7 +231,7 @@ public final class YamlString extends Yaml {
      * @return a new YamlString if it could be parsed, otherwise returns <code>null</code>
      */
     public static @Nullable YamlString parse(String s) {
-        Matcher m = Pattern.compile("^\\s*(?<name>[a-z]\\w*):\\s?\"(?<value>[^\"]*)\"").matcher(s);
+        Matcher m = Pattern.compile("^\\s*(?<name>[A-Za-z][\\w ]*):\\s?\"(?<value>[^\"]*)\"").matcher(s);
         if (m.matches()) return new YamlString(m.group("name"), m.group("value"));
         return null;
     }
