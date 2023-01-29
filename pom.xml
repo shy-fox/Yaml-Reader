@@ -26,6 +26,14 @@
             <version>3.8.2</version>
         </dependency>
     </dependencies>
+    
+    <distributionManagement>
+        <repository>
+            <id>ossrh</id>
+            <name>Central Repository OSSRH</name>
+            <url>https://oss.sonatype.org/service/local/staging/deploy/maven2</url>
+        </repository>
+    </distributionManagement>
 
     <build>
         <plugins>
@@ -35,7 +43,7 @@
                 <version>2.4</version>
                 <configuration>
                     <archive>
-                        <manifestFile>src/resources/META-INF/MANIFEST.MF</manifestFile>
+                        <manifestFile>src/main/resources/META-INF/MANIFEST.MF</manifestFile>
                     </archive>
                 </configuration>
             </plugin>
