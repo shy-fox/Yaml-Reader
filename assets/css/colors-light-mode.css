@@ -1,0 +1,8 @@
+:root {
+    --bg-sidebar: rgb(253, 253, 253);
+    --border-sidebar: rgb(0, 0, 20);
+    --menu-shadow: rgba(0, 10, 10, 0.33);
+    --menu-button-bg: rgb(0, 0, 0);
+    --menu-button-shadow: rgba(20, 20, 20, 0.34);
+    --text-color: rgba(0, 0, 0, 0.8);
+}
