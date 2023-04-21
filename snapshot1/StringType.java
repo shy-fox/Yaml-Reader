@@ -4,6 +4,7 @@ import io.shiromi.saml.exceptions.RangeException;
 
 import io.shiromi.saml.functions.StringIterator;
 
+import io.shiromi.saml.tools.Formatter;
 import io.shiromi.saml.tools.Range;
 import org.intellij.lang.annotations.RegExp;
 
@@ -456,16 +457,19 @@ public final class StringType extends AbstractType<String> implements Iterable<C
 
         int index = -1;
 
-        for (int idx : all) {
-            if (idx + cs.length > length) continue;
-            for (int i = 1; i < cs.length; i++) {
-                if (cs[i] != chars[idx + i]) break;
-                if (i == cs.length - 1) {
-                    index = idx;
-                    break;
+        found:
+        {
+            for (int idx : all) {
+                if (idx + cs.length > length) continue;
+                for (int i = 1; i < cs.length; i++) {
+                    if (cs[i] != chars[idx + i]) break;
+                    if (i == cs.length - 1) {
+                        index = idx;
+                        break found;
+                    }
                 }
             }
-            break;
+            return -1;
         }
 
         return index;
@@ -618,13 +622,9 @@ public final class StringType extends AbstractType<String> implements Iterable<C
     public boolean removeString(@NotNull String string) {
         char[] cs = chars;
 
-        Matcher m = Pattern.compile(string).matcher(value);
-        if (m.find()) {
-            int l = string.length();
-            int begin = m.start();
-
-            fastRemove(cs, begin, l - 1);
-
+        Range match = find(string);
+        if (match != null) {
+            fastRemove(cs, match.start(), match.range() - 1);
             return true;
         }
 
@@ -959,9 +959,23 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * Returns this object's character array
      *
      * @return this object's character array
+     * @see #toArray()
      */
     public char[] toCharArray() {
         return chars;
+    }
+
+    /**
+     * Returns this object's character array cast to <code>String</code>
+     *
+     * @return this object's character array cast to <code>String</code>
+     * @see #toCharArray()
+     */
+    @Contract(pure = true)
+    public String @NotNull [] toArray() {
+        String[] strings = new String[length];
+        for (int i = 0; i < length; i++) strings[i] = String.valueOf(chars[i]);
+        return strings;
     }
 
     /**
@@ -993,8 +1007,25 @@ public final class StringType extends AbstractType<String> implements Iterable<C
         for (String s : charRange(chars, range)) iterator.apply(s);
     }
 
+    /**
+     * Returns whether this string is a zero-width string or not
+     *
+     * @return whether this string is a zero-width string or not
+     */
     public boolean isEmpty() {
         return length == 0;
+    }
+
+    /**
+     * Clears this <code>StringType</code>, setting the value to an empty <code>String</code>, use with caution as
+     * clearing before storing the data could lead to problems
+     *
+     * @see #getValue()
+     * @see #toCharArray()
+     */
+    public void clear() {
+        chars = new char[0];
+        update();
     }
 
     /**
@@ -1176,7 +1207,7 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * @return an array of <code>StringType</code> containing each corresponding <code>String</code>
      * @see #fromArray(String[], String)
      */
-    public static StringType @NotNull [] array(String @NotNull [] array) {
+    public static StringType @NotNull [] array(String @NotNull ... array) {
         StringType[] s = new StringType[array.length];
         for (int i = 0; i < array.length; i++) s[i] = new StringType(array[i]);
         return s;
@@ -1259,6 +1290,138 @@ public final class StringType extends AbstractType<String> implements Iterable<C
     }
 
     /**
+     * Format a given input string using these different flags:
+     * <ul>
+     *     <li><code>$s</code> will be replaced with a string representation of the object</li>
+     *     <li><code>$d.#</code> will be replaced with a formatted number, see {@link Formatter#numberFormat(double, int)}</li>
+     *     <li><code>$x/#</code> will be replaced with a formatted hexadecimal string of the object, see
+     *     {@link Formatter#hexFormat(int, int)}</li>
+     * </ul>
+     * A few examples:
+     * <blockquote><pre>{@code
+     *  StringType.format("foo $s", "bar");   // results in "foo bar"
+     *  StringType.format("Hex: $x/16", 200); // results in "00000000000000C8"
+     *  StringType.format("A few numbers: $d.1, $d.0, $d.5", 5, -15.3, 25.4)
+     *  // results in "A few numbers: 5.0, -15, 25.400000000000000"
+     * }</pre></blockquote>
+     *
+     * @param format the string to format with the above-mentioned flags
+     * @param args   the arguments to format to
+     * @return a <code>StringType</code> containing the formatted string, if <em>arguments</em> is not equal
+     * to the amount of flags, will return an {@link #StringType() empty} <code>StringType</code>
+     */
+    public static @NotNull StringType format(String format, Object... args) {
+        StringType toFormat = new StringType(format);
+        StringType bak = new StringType();
+
+        int i;
+        int j = 0;
+        while ((i = toFormat.find('$')) > -1) {
+            // string check
+            if (toFormat.charAt(i + 1) == 's') {
+                toFormat.replace("$s", args[j++].toString());
+                continue;
+            }
+            // double/float check
+            if (toFormat.contains("$d.")) {
+                if (!(args[j] instanceof Number)) throw new IllegalArgumentException("Cannot parse value " + args[j]);
+                int n = toFormat.find("$d.").end();
+                int m = n + 1;
+                while (toFormat.charAt(m) > 0x2F && toFormat.charAt(n) < 0x40) {
+                    m++;
+                    if (m == toFormat.length) break;
+                }
+                int amount = Integer.parseInt(toFormat.substring(n, m).value);
+                toFormat.replace("$d." + amount, Formatter.numberFormat(((Number) args[j++]).doubleValue(), amount));
+                continue;
+            }
+
+            // hex check
+            if (toFormat.contains("$x/")) {
+                int n = toFormat.find("$x/").end() - 1;
+                int m = n;
+                while (toFormat.charAt(m) > 0x29 && toFormat.charAt(m) < 0x40) {
+                    m++;
+                    if (m == toFormat.length) break;
+                }
+
+                int amount = Integer.parseInt(toFormat.substring(n + 1, m).value);
+
+                // hashCode support
+                if (args[j] instanceof Integer || args[j] instanceof Byte || args[j] instanceof Short)
+                    toFormat.replace("$x/" + amount, Formatter.hexFormat((int) (args[j]), amount));
+                if (args[j] instanceof AbstractType<?> a)
+                    toFormat.replace("$x/" + amount, a.hex(amount));
+                else toFormat.replace("$x/" + amount, Formatter.hexFormat(args[j].hashCode(), amount));
+                j++;
+                continue;
+            }
+
+            if (j > args.length) return bak;
+            if (j == args.length) break;
+        }
+
+        if (j < args.length) return bak;
+
+        return toFormat;
+    }
+
+    /**
+     * Replaces the first occurrence of the given character with the specified new character
+     *
+     * @param oldValue the value to replace
+     * @param newValue the value to replace with
+     * @return this object with the first occurrence of the specified character replaced
+     * @see #replace(String, String)
+     */
+    public StringType replace(char oldValue, char newValue) {
+        int i = find(oldValue);
+        if (i == -1) return this;
+        return replace(i, newValue);
+    }
+
+    private StringType replace(int index, char newValue) {
+        chars[index] = newValue;
+        modCount++;
+        update();
+        return this;
+    }
+
+    /**
+     * Replaces the first occurrence of the given <code>String</code> with the specified new <code>String</code>
+     *
+     * @param oldValue the value to replace
+     * @param newValue the value to replace with
+     * @return this object with the first occurrence of the specified <code>String</code> replaced
+     * @see #replace(char, char)
+     */
+    public StringType replace(String oldValue, String newValue) {
+        int index = indexOf(oldValue);
+        if (index == -1) return this;
+
+        Range r = find(oldValue);
+        char[] first = new char[r.start()];
+        System.arraycopy(chars, 0, first, 0, r.start());
+        char[] replacement = newValue.toCharArray();
+        char[] rest = new char[length - r.end()];
+        System.arraycopy(chars, r.start() + r.range(), rest, 0, length - r.end());
+
+        char[] data = new char[first.length +
+                replacement.length +
+                rest.length];
+
+        System.arraycopy(first, 0, data, 0, first.length);
+        System.arraycopy(replacement, 0, data, first.length, replacement.length);
+        System.arraycopy(rest, 0, data, replacement.length + first.length, rest.length);
+
+        chars = data;
+
+        modCount++;
+        update();
+        return this;
+    }
+
+    /**
      * Returns an iterator over each {@code char} of this object's value
      *
      * @return an iterator over each {@code char} of this object's value
@@ -1289,8 +1452,22 @@ public final class StringType extends AbstractType<String> implements Iterable<C
         return result;
     }
 
+    /**
+     * Creates a shallow copy of this object, copying the value
+     *
+     * @return a shallow copy of this object
+     */
     public @NotNull StringType clone() {
-        return new StringType();
+        try {
+            StringType s = (StringType) super.clone();
+            s.value = value;
+            s.chars = Arrays.copyOf(chars, length);
+            s.modCount = 0;
+            return s;
+        } catch (CloneNotSupportedException e) {
+            // this shouldn't happen since we should - hopefully - be Cloneable
+            throw new InternalError();
+        }
     }
 
     /**
