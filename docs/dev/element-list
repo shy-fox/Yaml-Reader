@@ -1,0 +1,8 @@
+io.shiromi.saml
+io.shiromi.saml.annotations
+io.shiromi.saml.elements
+io.shiromi.saml.exceptions
+io.shiromi.saml.functions
+io.shiromi.saml.streams
+io.shiromi.saml.tools
+io.shiromi.saml.types
