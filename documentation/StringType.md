@@ -172,41 +172,41 @@ Below is a list of all `public` and `public static` methods inside `StringType`
 <ol>
 <li><a href="#"><code>contains(char)</code></a></li>
 <li><a href="#"><code>find(char)</code></a></li>
-<li><a href="#"><code>Find(String)</code></a></Li>
+<li><a href="#"><code>find(String)</code></a></Li>
 <li><a href="#"><code>findLast(char)</code></a></li>
 <li><a href="#"><code>findAll(char)</code></a></li>
-<li><a href="#"><code>FindAll(String)</code></a></Li>
+<li><a href="#"><code>findAll(String)</code></a></Li>
 <li><a href="#"><code>substring(int)</code></a></li>
 <li><a href="#"><code>substring(int, int)</code></a></li>
 <li><a href="#"><code>splitEach(int)</code></a></li>
-<li><a href="#"><code>Matches(String)</code></a></Li>
+<li><a href="#"><code>matches(String)</code></a></Li>
 <li><a href="#"><code>indexOf(char)</code></a></li>
-<li><a href="#"><code>IndexOf(String)</code></a></Li>
+<li><a href="#"><code>indexOf(String)</code></a></Li>
 <li><a href="#"><code>indexOf(string, int)</code></a></li>
-<li><a href="#"><code>LastIndexOf(String)</code></a></Li>
+<li><a href="#"><code>lastIndexOf(String)</code></a></Li>
 <li><a href="#"><code>lastIndexOf(char)</code></a></li>
 <li><a href="#"><code>indexesOf(char)</code></a></li>
 <li><a href="#"><code>remove(int)</code></a></li>
 <li><a href="#"><code>remove(char)</code></a></li>
 <li><a href="#"><code>removeChars(int, int)</code></a></li>
 <li><a href="#"><code>removeChars(char[])</code></a></li>
-<li><a href="#"><code>RemoveString(String)</code></a></Li>
+<li><a href="#"><code>removeString(String)</code></a></Li>
 <li><a href="#"><code>insert(char, int)</code></a></li>
-<li><a href="#"><code>Insert(String, String)</code></a></Li>
+<li><a href="#"><code>insert(String, String)</code></a></Li>
 <li><a href="#"><code>insert(string, int)</code></a></li>
 <li><a href="#"><code>add(char, int)</code></a></li>
 <li><a href="#"><code>add(char)</code></a></li>
 <li><a href="#"><code>append(char)</code></a></li>
-<li><a href="#"><code>Append(StringType)</code></a></Li>
-<li><a href="#"><code>Append(String)</code></a></Li>
-<li><a href="#"><code>AppendLine(String)</code></a></Li>
+<li><a href="#"><code>append(StringType)</code></a></Li>
+<li><a href="#"><code>append(String)</code></a></Li>
+<li><a href="#"><code>appendLine(String)</code></a></Li>
 <li><a href="#"><code>append(char[]</code></a></li>
-<li><a href="#"><code>Append(Object)</code></a></Li>
+<li><a href="#"><code>append(Object)</code></a></Li>
 <li><a href="#"><code>appendRepeat(char, int)</code></a></li>
 <li><a href="#"><code>repeatAppend(string, int)</code></a></li>
 <li><a href="#"><code>charAt(int)</code></a></li>
-<li><a href="#"><code>StartsWith(String)</code></a></Li>
-<li><a href="#"><code>EndsWith(String)</code></a></Li>
+<li><a href="#"><code>startsWith(String)</code></a></Li>
+<li><a href="#"><code>endsWith(String)</code></a></Li>
 <li><a href="#"><code>endsWith(char)</code></a></li>
 <li><a href="#"><code>length()</code></a></li>
 <li><a href="#"><code>toCharArray()</code></a></li>
@@ -214,29 +214,29 @@ Below is a list of all `public` and `public static` methods inside `StringType`
 <li><a href="#"><code>toArray()</code></a></li>
 <li><a href="#"><code>toArray(int, int)</code></a></li>
 <li><a href="#"><code>getLast()</code></a></li>
-<li><a href="#"><code>ForEachChar(StringIterator)</code></a></Li>
-<li><a Href="#"><code>ForEachChar(Int, StringIterator)</code></a></Li>
+<li><a href="#"><code>forEachChar(StringIterator)</code></a></Li>
+<li><a Href="#"><code>forEachChar(Int, StringIterator)</code></a></Li>
 <li><a href="#"><code>isEmpty()</code></a></li>
 <li><a href="#"><code>clear()</code></a></li>
 <li><a href="#"><code>split(string, int)</code></a></li>
 <li><a href="#"><code>split(pattern, int)</code></a></li>
-<li><a href="#"><code>Split(Pattern)</code></a></Li>
-<li><a href="#"><code>Split(String)</code></a></Li>
+<li><a href="#"><code>split(Pattern)</code></a></Li>
+<li><a href="#"><code>split(String)</code></a></Li>
 <li><a href="#"><code>split(char, int)</code></a></li>
 <li><a href="#"><code>split(char)</code></a></li>
-<li><a href="#"><code>Array(String, String...)</code></a></Li>
-<li><a href="#"><code>Array(String[])</code></a></Li>
-<li><a href="#"><code>FromArray(String[], String)</code></a></Li>
-<li><a href="#"><code>FromArray(String[])</code></a></Li>
+<li><a href="#"><code>array(String, String...)</code></a></Li>
+<li><a href="#"><code>array(String[])</code></a></Li>
+<li><a href="#"><code>fromArray(String[], String)</code></a></Li>
+<li><a href="#"><code>fromArray(String[])</code></a></Li>
 <li><a href="#"><code>fromArray(string[], delimiter)</code></a></li>
-<li><a href="#"><code>FromArray(String[], StringType)</code></a></Li>
-<li><a href="#"><code>Join(String[])</code></a></Li>
+<li><a href="#"><code>fromArray(String[], StringType)</code></a></Li>
+<li><a href="#"><code>oin(String[])</code></a></Li>
 <li><a href="#"><code><em>format</em>(String, Object...)</code></a></li>
 <li><a href="#"><code>replace(char, char)</code></a></li>
 <li><a href="#"><code>replaceAll(char, char)</code></a></li>
 <li><a href="#"><code>toBuffer()</code></a></li>
-<li><a href="#"><code>Replace(String, String)</code></a></Li>
-<li><a href="#"><code>ReplaceAll(String, String)</code></a></Li>
+<li><a href="#"><code>replace(String, String)</code></a></Li>
+<li><a href="#"><code>replaceAll(String, String)</code></a></Li>
 <li><a href="#"><code>iterator()</code></a></li>
 <li><a href="#"><code>toString()</code></a></li>
 <li><a href="#"><code>hashCode()</code></a></li>
@@ -251,11 +251,28 @@ Below is a list of all `public` and `public static` methods inside `StringType`
 ```java
 public boolean contains(char c)
 ```
-> Checks whether this object contains the specified substring <br>
->
-> Params:  &nbsp;<code>substring</code> &ndash; the <code>substring</code> to look for  <br>
-> Returns:  &nbsp;&nbsp;whether this object contains the specified <code>String</code> or not  <br>
-> See Also: [contains(char)]
+
+<blockquote>
+Checks whether this object contains the specified substring <br>
+
+<table>
+<tbody>
+<tr style="border: none">
+<td style="border: none; text-align: left;">Params:</td>
+<td style="border: none; text-align: left;"><code>substring</code> &ndash; the <code>substring</code> to look for</td>
+</tr>
+<tr style="border: none">
+<td style="border: none; text-align: left">Returns:</td>
+<td style="border: none; text-align: left">whether this object contains the specified <code>String</code> or not</td>
+</tr>
+<tr style="border: none">
+<td style="border: none; text-align: left">See Also:</td>
+<td style="border: none; text-align: left"><a href="#"><code>contains(char)</code></a></td>
+</tr>
+</tbody>
+</table>
+</blockquote>
+
 ---
 
 ### All Methods
