@@ -1,0 +1,108 @@
+package io.shiromi.saml.streams;
+
+import io.shiromi.saml.elements.YamlElement;
+import io.shiromi.saml.functions.DataOutputStream;
+
+import org.jetbrains.annotations.Contract;
+import org.jetbrains.annotations.NotNull;
+
+import java.io.*;
+import java.util.NoSuchElementException;
+
+public final class YamlOutputStream extends BufferedWriter implements DataOutputStream {
+    private final FileWriter writer;
+
+    private char[] buf;
+    private int size;
+
+    private YamlOutputStream(File f) throws IOException {
+        super(new FileWriter(f));
+        this.writer = new FileWriter(f);
+        this.buf = new char[0];
+        this.size = buf.length;
+    }
+
+    public boolean putContent() throws IOException {
+        assert writer != null;
+        for (char c : buf) writer.write(c);
+        return true;
+    }
+
+    public char @NotNull [] put(char @NotNull [] buf) {
+        char[] nBuf = grow(buf.length);
+        System.arraycopy(buf, 0, nBuf, size, buf.length);
+
+        update(nBuf);
+        return nBuf;
+    }
+
+    public void put(@NotNull YamlElement<?> element) {
+        put(element.toBuffer());
+    }
+
+    @Contract(pure = true)
+    public @NotNull String getContent() {
+        return String.valueOf(buf);
+    }
+
+    public void clearContent() throws NoSuchElementException {
+        if (isEmpty()) throw new NoSuchElementException("Cannot clear content of an empty file.");
+        for (int i = 0; i < size; i++) buf[i] = 0;
+    }
+
+    public char get(int index) throws IndexOutOfBoundsException {
+        return buf[index];
+    }
+
+    private char @NotNull [] grow(int length) {
+        char[] nBuf = new char[size + length];
+        System.arraycopy(buf, 0, nBuf, 0, size);
+        return nBuf;
+    }
+
+    public boolean isEmpty() {
+        if (size == 0) return true;
+        for (char c : buf)
+            if (c != 0) return false;
+        return true;
+    }
+
+    @Contract(mutates = "this")
+    private void update(char @NotNull [] buf) {
+        this.buf = buf;
+        size = buf.length;
+    }
+
+    public boolean write() throws IOException {
+        if (isEmpty()) return false;
+        writer.write(buf);
+        return true;
+    }
+
+    public static boolean write(File f, char[] buf) throws IOException {
+        return newInstance(f, buf).write();
+    }
+
+    @Contract("_ -> new")
+    public static @NotNull YamlOutputStream getInstance(File f) throws IOException {
+        return new YamlOutputStream(f);
+    }
+
+    public static @NotNull YamlOutputStream getInstance(String s) throws IOException {
+        File f = new File(s);
+        if (!f.exists()) throw new FileNotFoundException("File " + s + " does not exist");
+        return getInstance(f);
+    }
+
+    public static @NotNull YamlOutputStream newInstance(File f, char[] buf) throws IOException {
+        var v = getInstance(f);
+        v.update(buf);
+        return v;
+    }
+
+    public static @NotNull YamlOutputStream newInstance(String s, char[] buf) throws IOException {
+        var v = getInstance(s);
+        v.update(buf);
+        return v;
+    }
+}
