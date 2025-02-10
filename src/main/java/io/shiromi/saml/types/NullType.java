@@ -7,7 +7,10 @@ import org.jetbrains.annotations.NotNull;
  * Instances of the class <code>NullType</code> all have a value of {@code null},
  * but can all be cast to the different types, it does not carry any special methods
  * or has any special functionality
+ * <hr>
+ * <p>Last changed: <strong>11/9/2023</strong></p>
  *
+ * @since 0.1-dev
  * @author Shiromi
  * @version 2.0-11923-J
  */

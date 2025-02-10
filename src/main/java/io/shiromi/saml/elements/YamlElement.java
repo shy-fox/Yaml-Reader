@@ -1,6 +1,7 @@
 package io.shiromi.saml.elements;
 
 import io.shiromi.saml.tools.ValuePair;
+import io.shiromi.saml.types.NumberType;
 import org.intellij.lang.annotations.MagicConstant;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
@@ -31,6 +32,10 @@ public abstract class YamlElement<T> extends AbstractElement<T> implements java.
 
     public final T value() {
         return value;
+    }
+
+    public final String getContents() {
+        return value.toString();
     }
 
     public static @Nullable YamlElement<?> fromField(@NotNull final Field f, final Object o) {
@@ -66,10 +71,14 @@ public abstract class YamlElement<T> extends AbstractElement<T> implements java.
             return null;
         }
 
-        if (e.getTypeOfArray() == String.class ||
-                e.getTypeOfArray() == char.class ||
-                e.getTypeOfArray() == char[].class) {
+        if (e.getTypeOf() == String.class ||
+                e.getTypeOf() == char.class ||
+                e.getTypeOf() == char[].class) {
             return stringElement(e);
+        }
+        
+        if (e.getTypeOf() == Number.class) {
+            return numberElement(e);
         }
 
         return e;
@@ -111,5 +120,9 @@ public abstract class YamlElement<T> extends AbstractElement<T> implements java.
 
     public static @NotNull YamlStringElement stringElement(@NotNull YamlElement<?> e) {
         return e instanceof YamlStringElement s ? s : new YamlStringElement(e.name, String.valueOf(e.value));
+    }
+
+    public static @NotNull YamlNumberElement numberElement(@NotNull YamlElement<?> e) {
+        return e instanceof YamlNumberElement s ? s : new YamlNumberElement(e.name, NumberType.parse(String.valueOf(e.value)));
     }
 }

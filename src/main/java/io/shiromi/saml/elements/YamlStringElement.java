@@ -9,6 +9,7 @@ public class YamlStringElement extends YamlElement<StringType> {
 
     public YamlStringElement(String name) {
         super(name);
+        setType(StringType.class);
     }
 
     public YamlStringElement(String name, StringType value) {

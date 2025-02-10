@@ -25,6 +25,10 @@ abstract class AbstractElement<T> implements Serializable {
         this.setValue(value);
     }
 
+    public void setType(@Nullable Class<? extends T> type) {
+        this.type = type;
+    }
+
     @SuppressWarnings("unchecked")
     public @Nullable T setValue(T newT) {
         if (value == null) return value = newT;
@@ -65,4 +69,13 @@ abstract class AbstractElement<T> implements Serializable {
     }
 
     public abstract AbstractElement<T> parse(String input) throws YamlParserException;
+
+    @Override
+    public String toString() {
+        return "AbstractElement{" +
+                "name='" + name + '\'' +
+                ", value=" + value +
+                ", type=" + type +
+                '}';
+    }
 }

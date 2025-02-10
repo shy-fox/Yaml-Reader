@@ -36,9 +36,11 @@ import org.jetbrains.annotations.Nullable;
  * <tr><td>&not;</td><td>{@link #not() not}</td><td>{@code true} if {@code false} and vice-versa</td></tr>
  * </tbody>
  * </table>
+ * <hr>
+ * <p>Last changed: 5/22/2024</p>
  *
  * @author Shiromi
- * @version 2.0-11923-J
+ * @version 2.0-52224-J
  */
 public final class BooleanType extends AbstractType<Boolean> {
 

@@ -8,6 +8,7 @@ public class YamlGenericElement extends YamlElement<GenericType> {
     public YamlGenericElement(String name) {
         super(name);
         setValue(null);
+        setType(GenericType.class);
     }
 
     public YamlGenericElement(String name, GenericType value) {
@@ -24,12 +25,12 @@ public class YamlGenericElement extends YamlElement<GenericType> {
         return value.toBuffer();
     }
 
-    public final Class<?> getTypeOfArray() {
+    public final Class<?> getTypeOf() {
         return value.getValue().getClass();
     }
 
     public final @NotNull String getTypeName() {
-        return getTypeOfArray().getTypeName();
+        return getTypeOf().getTypeName();
     }
 
     @Override

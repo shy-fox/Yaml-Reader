@@ -20,6 +20,10 @@ import java.util.function.UnaryOperator;
  * class to {@link ArrayList}, but with a few changes, but the majority is taken from it
  * <br>
  * It has similar functionality to Java's default arrays or its built in ArrayList, however it does have some differences
+ * <hr>
+ * <p>Last changed: 2/10/2025</p>
+ * @since 1.0
+ * @version 2.1-21025-J
  * @param <E>
  */
 abstract class AbstractListType<E> extends AbstractType<E[]> implements List<E>, Iterable<E> {

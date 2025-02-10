@@ -14,9 +14,12 @@ import java.util.Objects;
  * Instances of the class <code>GenericType</code> carry a value of type <code>Object</code>, essentially
  * acting as an <code>Any</code> type, as the same suggests, this class' sole purpose is to allow interchangeability
  * between types and generification of types.
+ * <hr>
+ * <p>Last changed: <strong>5/7/2024</strong></p>
  *
+ * @since 0.1-dev
  * @author Shiromi
- * @version 2.0-11923-J
+ * @version 2.0-5724-J
  */
 public final class GenericType extends AbstractType<Object> {
     private Class<?> classOfT;

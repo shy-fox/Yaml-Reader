@@ -1,18 +1,11 @@
 package io.shiromi.saml.streams;
 
-import io.shiromi.saml.annotations.SerializedItem;
-
 import io.shiromi.saml.elements.YamlElement;
-import org.jetbrains.annotations.Contract;
-import org.jetbrains.annotations.NotNull;
+import io.shiromi.saml.exceptions.DuplicateEntryException;
 
-import java.io.BufferedWriter;
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
-
-import java.lang.reflect.Field;
-import java.lang.annotation.Annotation;
+import java.io.*;
+import java.util.Arrays;
+import java.util.Objects;
 
 public class YamlWriter {
 //    @Contract(pure = true)
@@ -44,4 +37,49 @@ public class YamlWriter {
     private String fileName;
     private String[] path;
     private YamlElement<?>[] content;
+
+    public YamlWriter(File f) throws FileNotFoundException {
+        if (!f.exists()) throw new FileNotFoundException(String.format("File %s does not exist on this system.", f));
+        this.fileName = f.getName();
+        this.path = f.getPath().split("/");
+
+        this.content = new YamlElement[0];
+    }
+
+    // DEBUG
+    public YamlWriter() {
+        this.content = new YamlElement[0];
+        this.fileName = "test.yaml";
+        this.path = new String[]{ };
+    }
+
+    public YamlWriter(String path) throws FileNotFoundException {
+        this(new File(path));
+    }
+
+    public final YamlWriter put(YamlElement<?> element) throws DuplicateEntryException {
+        if (contains(this.content, element))
+            throw new DuplicateEntryException(String.format("Element with name %s already exists.", element.getName()));
+
+        YamlElement<?>[] tmp = new YamlElement[content.length + 1];
+        System.arraycopy(content, 0, tmp, 0, content.length);
+        tmp[tmp.length - 1] = element;
+        content = tmp;
+
+        return this;
+    }
+
+    @Override
+    public String toString() {
+        return "YamlWriter{" +
+                "fileName='" + fileName + '\'' +
+                ", path=" + Arrays.toString(path) +
+                ", content=" + Arrays.toString(content) +
+                '}';
+    }
+
+    private static boolean contains(Object[] a, Object b) {
+        for (Object c : a) if (Objects.equals(b, c)) return true;
+        return false;
+    }
 }

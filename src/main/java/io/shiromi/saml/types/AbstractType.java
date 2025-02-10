@@ -19,10 +19,13 @@ import java.util.Objects;
  * Subtypes of this class behave a lot like their Java counterparts, e.g. {@link StringType} behaves similar to <code>String</code>,
  * this class itself only exists for generalization and unification of types throughout, as well as basic methods
  * implemented by each subclass.
+ * <hr>
+ * <p>Last changed: <strong>30/10/2024</strong></p>
  *
+ * @since 1.0
  * @param <T> the type of object this class carries as values
  * @author Shiromi
- * @version 2.0-11923-J
+ * @version 2.0-301024-J
  */
 abstract class AbstractType<T> implements java.io.Serializable {
 

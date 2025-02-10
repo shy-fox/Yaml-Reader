@@ -1,14 +1,15 @@
 package io.shiromi.saml.elements;
 
 import io.shiromi.saml.exceptions.YamlParserException;
+import io.shiromi.saml.tools.Parser;
 import io.shiromi.saml.types.NumberType;
 import org.jetbrains.annotations.Contract;
 import org.jetbrains.annotations.NotNull;
-import org.jetbrains.annotations.Nullable;
 
 public final class YamlNumberElement extends YamlElement<NumberType> {
     public YamlNumberElement(String name) {
         super(name);
+        setType(NumberType.class);
     }
 
     public YamlNumberElement(String name, NumberType value) {
@@ -22,9 +23,9 @@ public final class YamlNumberElement extends YamlElement<NumberType> {
         return new char[0];
     }
 
-    @Contract(pure = true)
+    @Contract("_ -> new")
     @Override
-    public @Nullable YamlNumberElement parse(String input) throws YamlParserException {
-        return null;
+    public @NotNull YamlNumberElement parse(String input) throws YamlParserException {
+        return Parser.stringToYamlNumberElement(input);
     }
 }

@@ -29,13 +29,17 @@ import java.util.regex.Pattern;
  *     <li><code>&lt;no parameter&gt;</code></li>
  *     <li>{@code char}</li>
  *     <li>{@code char[]}</li>
- *     <li><code>String</code>, {@code boolean}</li>
  *     <li><code>String</code></li>
  *     <li><code>StringBuilder</code></li>
+ *     <li><code>String</code>, {@code boolean}</li>
+ *     <li><code>Object</code> <em>(Since: 2.0-11923-J)</em></li>
+ *     <li><code>{@link AbstractType}</code> <em>(Since: 2.1-22524-J)</em></li>
  * </ul>
- *
+ * <hr>
+ * <p>Last changed: <strong>2/10/2025</strong></p>
  * @author Shiromi
- * @version 2.1-30424-J
+ * @since 0.1-dev
+ * @version 2.1-10225-J
  */
 public final class StringType extends AbstractType<String> implements Iterable<Character> {
     private int lastIndex;              // store last index of string
@@ -219,8 +223,8 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * <blockquote><pre>
      * {@code StringType s = new StringType(new BooleanType(false));}
      * </pre></blockquote>
-     * @param type the {@link AbstractType} to retrieve the value from
      *
+     * @param type the {@link AbstractType} to retrieve the value from
      * @see #StringType()
      * @see #StringType(char[])
      * @see #StringType(String)
@@ -299,6 +303,7 @@ public final class StringType extends AbstractType<String> implements Iterable<C
         }
         return new StringType(cs);
     }
+
     @Contract(pure = true)
     private static char charAt(char @NotNull [] chars, int index) {
         return chars[index];
@@ -875,13 +880,13 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * Appends the given {@link StringType} to this <code>String</code>
      *
      * @param value the value to add to the end of this string
-     * @return {@code true} regardless
+     * @return {@code this} object, with the added characters
      * @see #append(char)
      * @see #append(char[])
      * @see #append(String)
      */
     @Contract(pure = true)
-    public boolean append(@NotNull StringType value) {
+    public StringType append(@NotNull StringType value) {
         return append(value.chars);
     }
 
@@ -889,14 +894,14 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * Appends the specified <code>String</code> to this <code>String</code>
      *
      * @param string the <code>String</code> to add
-     * @return {@code true} in any case
+     * @return {@code this} object, with the added characters
      * @see #append(char)
      * @see #append(char[])
      * @see #append(StringType)
      * @see #appendLine(String)
      */
     @Contract(pure = true)
-    public boolean append(@NotNull String string) {
+    public StringType append(@NotNull String string) {
         return append(string.toCharArray());
     }
 
@@ -904,12 +909,12 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * Appends the specified <code>String</code> with a following <code>new line</code> character to this <code>String</code>
      *
      * @param string the <code>String</code> to add
-     * @return {@code true} in any case
+     * @return {@code this} object, with the added line
      * @see #append(char)
      * @see #append(char[])
      * @see #append(String)
      */
-    public boolean appendLine(String string) {
+    public StringType appendLine(String string) {
         return append(string + "\n");
     }
 
@@ -917,16 +922,16 @@ public final class StringType extends AbstractType<String> implements Iterable<C
      * Appends the specified {@code char[]} to this <code>String</code>
      *
      * @param chars the {@code char[]} to add
-     * @return {@code true} in any case
+     * @return {@code this} object, with the added characters
      * @see #append(char)
      * @see #append(String)
      */
-    public boolean append(char @NotNull [] chars) {
+    public StringType append(char @NotNull [] chars) {
         char[] cs = this.chars;
 
         fastAdd(cs, chars, length);
 
-        return true;
+        return this;
     }
 
     public boolean append(@NotNull Object o) {
@@ -954,7 +959,8 @@ public final class StringType extends AbstractType<String> implements Iterable<C
         if (count <= 0) return false;
         char[] cs = new char[count];
         Arrays.fill(cs, c);
-        return append(cs);
+        this.append(cs);
+        return true;
     }
 
     /**
@@ -972,7 +978,8 @@ public final class StringType extends AbstractType<String> implements Iterable<C
         char[] cs = new char[length * count];
         char[] sc = string.toCharArray();
         for (int i = 0; i < cs.length; i++) cs[i] = sc[i % length];
-        return append(cs);
+        this.append(cs);
+        return true;
     }
 
     @Contract(pure = true)
@@ -1526,7 +1533,7 @@ public final class StringType extends AbstractType<String> implements Iterable<C
 
             // hex check
             if (toFormat.contains("$x/")) {
-                int n = toFormat.find("$x/").end() - 1; 
+                int n = toFormat.find("$x/").end() - 1;
                 int m = n;
                 while (toFormat.charAt(m) > 0x29 && toFormat.charAt(m) < 0x40) {
                     m++;
@@ -1593,6 +1600,20 @@ public final class StringType extends AbstractType<String> implements Iterable<C
     public StringType replaceAll(char oldValue, char newValue) {
         while (find(oldValue) != -1) replace(oldValue, newValue);
         return this;
+    }
+
+    /**
+     * Removes all occurrences of a value within this object
+     *
+     * @param value the value to remove
+     * @return this object, but with all instances of the given value removed
+     * @since 2.1-10225-J
+     */
+    public StringType removeAll(char value) {
+        if (find(value) == -1) return this;
+        StringType s = new StringType();
+        for (char c : this) if (c != value) s.append(c);
+        return s;
     }
 
     private StringType replace(int index, char newValue) {
@@ -1747,6 +1768,40 @@ public final class StringType extends AbstractType<String> implements Iterable<C
         value = String.valueOf(chars);
         length = chars.length;
         lastIndex = length - 1;
+    }
+
+    /**
+     * Reverses the entire value of this object
+     *
+     * @since 2.1-10225-J
+     * @return the value of this object, but reversed
+     * @see #reverse(int, int)
+     */
+    public @NotNull StringType reverse() {
+        StringType reversed = new StringType();
+        for (int i = this.length - 1; i >= 0; i--)
+            reversed.append(this.charAt(i));
+        return reversed;
+    }
+
+    /**
+     * Reverses the value between indexes
+     *
+     * @param start the start index of the section to reverse (inclusive)
+     * @param end the end index of the section to reverse (exclusive)
+     * @since 2.1-10225-J
+     * @return the value of this object, reversed between both indexes
+     * @see #reverse()
+     */
+    public @NotNull StringType reverse(int start, int end) {
+        if (start < 0 || end >= this.length || start >= end)
+            throw new IllegalArgumentException("Invalid start or end index");
+
+        StringType prefix = this.substring(0, start);
+        StringType reversed = this.substring(start, end);
+        StringType suffix = this.substring(end);
+
+        return prefix.append(reversed.reverse()).append(suffix);
     }
 
     private class Itr implements Iterator<Character> {

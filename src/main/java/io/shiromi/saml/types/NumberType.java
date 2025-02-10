@@ -19,8 +19,13 @@ import org.jetbrains.annotations.Nullable;
  * <br>
  * Number type allows for using zero-division in constructors, however it is disabled by default. Using {@link #enableZeroDivSupport()}
  * or {@link #toggleZeroDivSupport()} enables it.
+ * <hr>
+ * <p>Last changed: <strong>2/10/2025</strong></p>
+ *
  * @author Shiromi
- * @version 2.0-221223-J
+ * @since 0.1-dev
+ * @version 2.0-21025-J
+ *
  */
 public final class NumberType extends AbstractType<Number> {
 
@@ -505,14 +510,14 @@ public final class NumberType extends AbstractType<Number> {
 
     /**
      * Parses a given input string bases on a given radix value and returns a valid {@code NumberType} if the
-     * input can be parsed to a number, currently only works with decimals for {@code radix <= 10}
+     * input can be parsed to a number; radix ranging from {@code 2 (binary)} to {@code 36 (0-9 + A-Z)}
      *
      * @param s     the input {@link StringType} to parse
      * @param radix the radix to parse the number to
      * @return a {@code NumberType} containing the value if parsed successfully
      * @throws NumberFormatException    If the input string contains a character which extends beyond the scope of the
      *                                  given radix
-     * @throws IllegalArgumentException If the radix is less than 2
+     * @throws IllegalArgumentException If the radix is less than 2 or more than 36
      * @author Shiromi
      * @see #parseDecimal(String)
      * @see #parseDecimal(StringType)
@@ -523,71 +528,74 @@ public final class NumberType extends AbstractType<Number> {
      * @see #parseHexadecimal(String)
      * @see #parseHexadecimal(StringType)
      * @see #parseNumber(String, int)
-     * @since 2.0-9124J
+     * @since 2.0-2210-J
      */
     @Contract(pure = true)
     public static @NotNull NumberType parseNumber(@NotNull StringType s, int radix) throws NumberFormatException, IllegalArgumentException {
-        while (s.contains('_')) s.remove('_');
+        s.removeAll('_');
+        int detectedRadix = -1;
+
+        s = s.toUpperCase();
+
+        if (s.startsWith("0B")) {
+            detectedRadix = 2;
+            s = s.substring(2);
+        } else if (s.startsWith("0O")) {
+            detectedRadix = 8;
+            s = s.substring(2);
+        } else if (s.startsWith("0X")) {
+            detectedRadix = 16;
+            s = s.substring(2);
+        } else if (s.startsWith('#')) {
+            detectedRadix = 16;
+            s = s.substring(1);
+        }
+
+        if (detectedRadix != -1 && radix != detectedRadix)
+            throw new IllegalArgumentException("Radix mismatch: Prefix suggests " + detectedRadix +
+                    " but received " + radix);
+
+        if (detectedRadix != -1) radix = detectedRadix;
+
         boolean neg = s.startsWith('-');
-        if (neg) s = s.substring(1);
+        if (neg) s.substring(1);
 
-        if (radix < 2)
-            throw new IllegalArgumentException("Expected value greater than 1 for radix, got " + radix + " instead");
+        if (radix < 2 || radix > 36) throw new IllegalArgumentException("Radix must be between 2 and 36, got " + radix);
 
-        if (radix <= 10) {
-            if (!s.isDigits()) {
-                throw new NumberFormatException("Expected only digits as values; Invalid input: '" + s.value + "' for radix: " + radix);
+        int dec = s.find('.');
+
+        if (dec >= 0) {
+            StringType intPart = s.substring(0, dec);
+            StringType fracPart = s.substring(dec + 1);
+
+            double result = 0;
+            double radixPower = 1;
+
+            for (char c : intPart.reverse()) {
+                int digit = getDigit(c, radix);
+                result += digit * radixPower;
+                radixPower *= radix;
             }
 
-            int dec = s.find('.');
-            if (dec >= 0) {
-                StringType a = s.substring(0, dec);
-                StringType b = s.substring(dec + 1);
-                if (!(a.isDigits() || b.isDigits()))
-                    throw new NumberFormatException("Expected only digits as values; Invalid input: '" + s.value + "' for radix: " + radix);
-
-                double d = 0;
-
-                char[] dint = a.toCharArray();
-                char[] d_dec = b.toCharArray();
-
-                for (int i = dint.length - 1, j = 0; i >= 0; i--, j++) {
-                    if (dint[i] - 0x30 >= radix)
-                        throw new NumberFormatException("Invalid input for radix " + radix);
-                    d += dint[i] * MathUtils.pow(radix, j);
-                }
-
-                for (int i = 0; i < d_dec.length; i++) {
-                    if (d_dec[i] - 0x30 >= radix)
-                        throw new NumberFormatException("Invalid input for radix " + radix);
-                    d += d_dec[i] * MathUtils.pow(radix, -(i + 1));
-                }
-
-                return new NumberType(d);
-            } else {
-                double d = 0;
-                for (int i = s.length() - 1, j = 0; i >= 0; i--, j++) {
-                    int k = s.charAt(i) - 0x30;
-                    if (k >= radix) throw new NumberFormatException("Invalid input for radix " + radix);
-
-                    d += k * MathUtils.pow(radix, j);
-                }
-                return new NumberType(d);
+            radixPower = 1.0 / radix;
+            for (char c : fracPart.reverse()) {
+                int digit = getDigit(c, radix);
+                result += digit * radixPower;
+                radixPower /= radix;
             }
+
+            return new NumberType(neg ? -result : result);
         }
 
-        char[] cs = s.toUpperCase().toCharArray();
-        double d = 0;
-
-        for (int i = cs.length - 1, j = 0; i >= 0; i--, j++) {
-            char c = cs[i];
-            int top = 0x41 + (radix - 11);
-            if (0x30 <= c && c <= 0x39) d += (c - 0x30) * MathUtils.pow(radix, j);
-            else if (0x41 <= c && c <= top) d += (c - 0x37) * MathUtils.pow(radix, j);
-            else throw new NumberFormatException("Invalid input for radix " + radix);
+        double result = 0;
+        double radixPower = 1;
+        for (char c : s.reverse()) {
+            int digit = getDigit(c, radix);
+            result += digit * radixPower;
+            radixPower *= radix;
         }
 
-        return new NumberType(d);
+        return new NumberType(neg ? -result : result);
     }
 
     /**
@@ -610,10 +618,23 @@ public final class NumberType extends AbstractType<Number> {
      * @see #parseHexadecimal(String)
      * @see #parseHexadecimal(StringType)
      * @see #parseNumber(StringType, int)
-     * @since 2.0-9124J
+     * @since 2.0-9124-J
      */
     public static @NotNull NumberType parseNumber(@NotNull String s, int radix) throws NumberFormatException, IllegalArgumentException {
         return parseNumber(new StringType(s), radix);
+    }
+
+    private static int getDigit(char c, int radix) throws NumberFormatException {
+        if ('0' <= c && c <= '9') {
+            int i = c - '0';
+            if (i >= radix) throw new NumberFormatException("Invalid digit '" + c + "' for radix " + radix);
+            return i;
+        } else if ('A' <= c && c <= 'Z') {
+            int i = c - 'A' + 10;
+            if (i >= radix) throw new NumberFormatException("Invalid digit '" + c + "' for radix " + radix);
+            return i;
+        }
+        throw new NumberFormatException("Invalid character '" + c + "' for radix " + radix);
     }
 
     /**
